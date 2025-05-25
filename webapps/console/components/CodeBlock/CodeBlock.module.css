@@ -1,0 +1,7 @@
+.blockWrapper {
+}
+
+.blockWrapper pre {
+  @apply text-background !important;
+  font-family: var(--font-mono) !important;
+}

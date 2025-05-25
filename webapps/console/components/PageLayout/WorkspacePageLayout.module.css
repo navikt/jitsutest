@@ -1,0 +1,40 @@
+.widthControl {
+  max-width: 1500px;
+  width: 100%;
+  min-width: 1024px;
+}
+
+.topMenu {
+  background-color: rgb(250 250 250) !important;
+  border-bottom: 0 !important;
+}
+
+.topMenu li :global(.ant-menu-submenu-title) {
+}
+
+.topMenu :global(.ant-menu-item) {
+  top: 0 !important;
+  margin-top: 0 !important;
+}
+
+.topMenu :global(.ant-menu-submenu) {
+  top: 0 !important;
+  margin-top: 0 !important;
+}
+
+.topMenu :global(li.ant-menu-submenu-selected) :global(.ant-menu-submenu-title) {
+  /*background-color: white !important;*/
+  /*padding-left: 0.5rem;*/
+  /*padding-right: 0.5rem;*/
+  /*padding-bottom: 0 !important;*/
+  /*border-bottom: 0 !important;*/
+}
+
+.topMenu :global(li.ant-menu-submenu-selected) :global(.ant-menu-submenu::after) {
+  all: unset;
+}
+
+/*.topMenu :global .ant-menu {*/
+/*  background-color: rgb(250 250 250) !important;*/
+/*  border-bottom-color: #eb5757 !important;*/
+/*}*/

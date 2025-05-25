@@ -1,0 +1,4 @@
+/prisma/schema/
+/.next/
+
+*storybook.log

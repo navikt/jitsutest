@@ -1,0 +1,123 @@
+import { JitsuFunction } from "@jitsu/protocols/functions";
+import { RetryError } from "@jitsu/functions-lib";
+import type { AnalyticsServerEvent } from "@jitsu/protocols/analytics";
+import { JuneCredentials } from "../meta";
+
+export type HttpRequest = {
+  method?: string;
+  url: string;
+  payload?: any;
+  headers?: Record<string, string>;
+};
+
+function prefix<P extends string = string>(param: Record<any, string>, prefix: P): Record<string, any> {
+  return Object.entries(param).reduce((acc, [key, value]) => ({ ...acc, [`${prefix}${key}`]: value }), {});
+}
+
+function filter(obj: Record<string, any>, ...keys: string[]) {
+  return Object.entries(obj).reduce((acc, [key, value]) => (keys.includes(key) ? acc : { ...acc, [key]: value }), {});
+}
+
+function trackEvent(event: AnalyticsServerEvent): any {
+  const groupId = event.context?.groupId;
+  return {
+    type: "track",
+    event: event.type === "page" ? "Page View" : event.event,
+    timestamp: event.timestamp,
+    anonymousId: event.anonymousId,
+    userId: event.userId,
+    email: event.context?.traits?.email,
+    properties: {
+      ...filter(event.properties || {}, "width", "height"),
+      referrer: event.context?.referrer,
+      referring_domain: event.context?.referring_domain,
+      ...prefix(event.context?.campaign || {}, "campaign_"),
+      ip: event.context?.ip,
+      userAgent: event.context?.userAgent,
+      locale: event.context?.locale,
+      ...prefix(event.context?.screen || {}, "screen_"),
+    },
+    context: { ...(groupId ? { groupId } : {}) },
+  };
+}
+
+function identifyEvent(event: AnalyticsServerEvent): any {
+  const traits = { ...event.traits };
+  // link is managed by group event
+  delete traits.groupId;
+  return {
+    type: "identify",
+    timestamp: event.timestamp,
+    anonymousId: event.anonymousId,
+    userId: event.userId,
+    traits: traits,
+  };
+}
+
+function groupEvent(event: AnalyticsServerEvent): any {
+  return {
+    type: "group",
+    timestamp: event.timestamp,
+    anonymousId: event.anonymousId,
+    userId: event.userId,
+    groupId: event.groupId,
+    traits: event.traits,
+  };
+}
+
+const JuneDestination: JitsuFunction<AnalyticsServerEvent, JuneCredentials> = async (event, ctx) => {
+  try {
+    let httpRequest: HttpRequest | undefined = undefined;
+    const headers = {
+      "Content-type": "application/json",
+      Authorization: `Basic ${ctx.props.apiKey}`,
+    };
+    if (event.type === "identify" && event.userId) {
+      httpRequest = {
+        url: `https://api.june.so/sdk/identify`,
+        payload: identifyEvent(event),
+        headers,
+      };
+    } else if (event.type === "group") {
+      httpRequest = {
+        url: `https://api.june.so/sdk/group`,
+        payload: groupEvent(event),
+        headers,
+      };
+    } else if (event.type === "track" || event.type === "page") {
+      if (event.userId || ctx.props.enableAnonymousUserProfiles) {
+        httpRequest = {
+          url: `https://api.june.so/sdk/track`,
+          payload: trackEvent(event),
+          headers,
+        };
+      }
+    }
+
+    if (httpRequest) {
+      const method = httpRequest.method || "POST";
+      const result = await ctx.fetch(httpRequest.url, {
+        method,
+        headers: httpRequest.headers,
+        ...(httpRequest.payload ? { body: JSON.stringify(httpRequest.payload) } : {}),
+      });
+      if (result.status !== 200) {
+        throw new Error(
+          `June.so ${method} ${httpRequest.url}:${
+            httpRequest.payload ? `${JSON.stringify(httpRequest.payload)} --> ` : ""
+          }${result.status} ${await result.text()}`
+        );
+      } else {
+        ctx.log.debug(`June.so ${method} ${httpRequest.url}: ${result.status} ${await result.text()}`);
+      }
+    }
+  } catch (e: any) {
+    throw new RetryError(e.message);
+  }
+};
+
+JuneDestination.displayName = "june-destination";
+
+JuneDestination.description = "This functions covers jitsu events and sends them to June";
+
+export default JuneDestination;

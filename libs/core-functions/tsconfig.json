@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "declaration": true,
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+    "target": "ESNext",
+    "module": "commonjs",
+    "lib": [
+      "ESNext",
+      "DOM"
+    ],
+    "noEmit": true
+  },
+  "exclude": [
+    "__tests__",
+    "node_modules",
+    "dist",
+    "test_projects",
+    "test",
+    "templates"
+  ]
+}

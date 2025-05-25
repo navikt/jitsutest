@@ -1,0 +1,203 @@
+import { getErrorMessage, getLog, newError, requireDefined } from "./index";
+import * as process from "process";
+import { debounce } from "./debounce";
+const log = getLog("singleton");
+
+export type CachedValue<T> = (
+  | {
+      success: true;
+      value: T;
+      error: never;
+    }
+  | { success: false; error: any; value: never }
+) & {
+  // For Singleton with TTL we need to clear it after TTL
+  // contains debounced function
+  debounceCleanup: () => void;
+};
+
+export interface Singleton<T> {
+  (): T;
+  waitInit: () => Promise<T>;
+  close: () => Promise<void>;
+}
+
+function clearSingleton<T>(globalName: string, cleanupFunc?: (t: T) => void) {
+  log.atInfo().log(`️🚮🚮🚮 ${globalName} deleting stale singleton`);
+  const cachedValue = global[`singletons_${globalName}`];
+  if (cachedValue?.success) {
+    if (cleanupFunc) {
+      try {
+        cleanupFunc(cachedValue.value);
+      } catch (e) {
+        log.atError().withCause(e).log(`️🚮🚮🚮 ${globalName} cleanup failed`);
+      }
+    }
+  }
+  delete global[`singletons_${globalName}`];
+}
+export function disableService<T>(globalName: string) {
+  process.env[getDisableServiceVar(globalName)] = "true";
+}
+
+function getDisableServiceVar(globalName: string) {
+  return `DISABLE_SERVICE_${globalName.toLowerCase()}`;
+}
+
+export function getSingleton<T>(
+  globalName: string,
+  factory: () => T | Promise<T>,
+  opts: {
+    ttlSec?: number;
+    optional?: boolean;
+    silent?: boolean;
+    errorTtlSec?: number;
+    cleanupFunc?: (t: T) => void;
+  } = {
+    ttlSec: 0,
+    errorTtlSec: 0,
+    optional: false,
+    silent: false,
+  }
+): Singleton<T> {
+  const disableServiceVar = getDisableServiceVar(globalName);
+  if (process.env[disableServiceVar]) {
+    log.atInfo().log(`️🚮🚮🚮 ${globalName} disabled by setting ${disableServiceVar}`);
+    const singleton: Partial<Singleton<T>> = () =>
+      Promise.reject<T>(
+        new Error(`️${globalName} disabled by setting by ${disableServiceVar} env var. waitInit() should not be called`)
+      );
+    singleton.waitInit = () =>
+      Promise.reject(
+        new Error(`️${globalName} disabled by setting by ${disableServiceVar} env var. waitInit() should not be called`)
+      );
+    return singleton as Singleton<T>;
+  }
+
+  const handleSuccess = (value: T, startedAtTs: number): T => {
+    global[`singletons_${globalName}`] = {
+      success: true,
+      value,
+      debounceCleanup:
+        opts.ttlSec && opts.ttlSec > 0
+          ? debounce(() => clearSingleton(globalName, opts.cleanupFunc), 1000 * opts.ttlSec)
+          : () => {},
+    };
+    if (!opts.silent) {
+      log.atInfo().log(`️⚡️⚡️⚡️ ${globalName} connected in ${Date.now() - startedAtTs}ms!`);
+    }
+    return value;
+  };
+
+  const handleError = (error: any): any => {
+    if (!opts.optional) {
+      log.atError().log(`❌ ❌ ❌ ${globalName} connection failed. The application isn't functional.`, error);
+    }
+    global[`singletons_${globalName}`] = {
+      success: false,
+      error,
+      debounceCleanup: () => {},
+    };
+    if (
+      !opts.optional &&
+      (process.env.FAIL_ON_DB_CONNECTION_ERRORS === "true" || process.env.FAIL_ON_DB_CONNECTION_ERRORS === "1")
+    ) {
+      log.atInfo().log("❌ ❌ ❌ Shutting down the application");
+      process.exit(1);
+    }
+    if (opts.errorTtlSec && opts.errorTtlSec > 0) {
+      setTimeout(() => clearSingleton(globalName, opts.cleanupFunc), 1000 * opts.errorTtlSec);
+    }
+    return error;
+  };
+
+  const cachedValue = global[`singletons_${globalName}`] as CachedValue<T> | undefined;
+  if (cachedValue?.success) {
+    cachedValue.debounceCleanup();
+    const result = () => cachedValue.value as T;
+    result.waitInit = () => Promise.resolve(cachedValue.value as T);
+    result.close = () => {
+      if (opts.cleanupFunc) {
+        opts.cleanupFunc(cachedValue.value);
+      }
+      return Promise.resolve();
+    };
+    return result;
+  } else if (cachedValue && !cachedValue.success) {
+    throw newError(
+      `${globalName} failed during initialization: ${getErrorMessage(cachedValue.error)}`,
+      cachedValue.error
+    );
+  }
+  log.atDebug().log(`Creating ${globalName} connection...`);
+  let newInstance: Promise<T> | T | undefined;
+  let startedAtTs = Date.now();
+  try {
+    newInstance = factory();
+  } catch (error) {
+    handleError(error);
+    const singleton: Partial<Singleton<T>> = () => Promise.reject<T>(error);
+    singleton.waitInit = () => Promise.reject(error);
+    return singleton as Singleton<T>;
+  }
+  if (newInstance instanceof Promise) {
+    const resultFunc = (globalInstance: any) => {
+      if (globalInstance.success) {
+        globalInstance.debounceCleanup();
+        return globalInstance.value;
+      } else {
+        throw newError(
+          `${globalName} failed during initialization: ${getErrorMessage(globalInstance.error)}`,
+          globalInstance.error
+        );
+      }
+    };
+    const result = () => {
+      const globalInstance = requireDefined(
+        global[`singletons_${globalName}`],
+        `The ${globalName} connection isn't ready yet`
+      );
+      return resultFunc(globalInstance);
+    };
+    result.waitInit = () => {
+      const globalInstance = global[`singletons_${globalName}`];
+      if (globalInstance) {
+        return Promise.resolve(resultFunc(globalInstance));
+      } else {
+        if (!(newInstance instanceof Promise)) {
+          startedAtTs = Date.now();
+          newInstance = Promise.resolve(factory());
+        }
+        return newInstance
+          .then(instance => handleSuccess(instance, startedAtTs))
+          .catch(e => {
+            handleError(e);
+            throw e;
+          })
+          .finally(() => {
+            newInstance = undefined;
+          });
+      }
+    };
+    result.close = () => {
+      const globalInstance = global[`singletons_${globalName}`];
+      if (opts.cleanupFunc && globalInstance.success) {
+        opts.cleanupFunc(globalInstance.value);
+      }
+      return Promise.resolve();
+    };
+    result.waitInit().catch(e => {});
+    return result;
+  } else {
+    handleSuccess(newInstance, startedAtTs);
+    const result = () => newInstance as T;
+    result.waitInit = () => Promise.resolve(newInstance as T);
+    result.close = () => {
+      if (opts.cleanupFunc) {
+        opts.cleanupFunc(newInstance as T);
+      }
+      return Promise.resolve();
+    };
+    return result;
+  }
+}

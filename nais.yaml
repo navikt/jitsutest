@@ -1,0 +1,40 @@
+apiVersion: nais.io/v1alpha1
+kind: Application
+metadata:
+  name: jitsutest
+  namespace: team-researchops
+  labels:
+    team: team-researchops
+spec:
+  image: {{ image }}
+  gcp:
+    sqlInstances:
+      - type: POSTGRES_17
+        tier: db-f1-micro
+        flags:
+          - name: cloudsql.logical_decoding
+            value: "on"
+        databases:
+          - name: jitsutest
+            users:
+              - name: datastream
+        diskAutoresize: true
+  ingresses:
+    - "https://jitsutest.ansatt.nav.no"
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "256Mi"
+    limits:
+      memory: "512Mi"
+  liveness:
+    path: "/signin"
+    port: 3000
+  readiness:
+    path: "/signin"
+    port: 3000
+  replicas:
+    cpuThresholdPercentage: 50
+    max: 2
+    min: 1
+  port: 3000

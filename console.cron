@@ -1,0 +1,1 @@
+*/15 * * * * curl --silent --show-error  http://localhost:3000/api/admin/events-log-trim
