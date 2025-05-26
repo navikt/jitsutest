@@ -11,11 +11,11 @@ RUN apt-get install git openssl procps python3 make g++ -y
 RUN npm -g install pnpm@^9.0.0
 
 WORKDIR /app
-COPY pnpm-lock.yaml .
+COPY package.json pnpm-lock.yaml ./
 COPY . .
 
 ENV NEXTJS_STANDALONE_BUILD=1
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --no-frozen-lockfile
 RUN pnpm build
 
 FROM base as console
