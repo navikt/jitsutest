@@ -1,6 +1,6 @@
 # Jitsu test
 
-Jitsu test på NAIS
+Jitsu test på NAIS.
 
 # Henvendelser og veiledning
 
