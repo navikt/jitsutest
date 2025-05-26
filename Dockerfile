@@ -95,7 +95,7 @@ USER runner
 
 EXPOSE 3401
 
-COPY --from=builder /app/services/profiles/dist .
+# COPY --from=builder /app/services/profiles/dist .
 
 ENV NODE_ENV=production
 ENV JITSU_VERSION_COMMIT_SHA=${JITSU_BUILD_COMMIT_SHA}
