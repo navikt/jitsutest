@@ -17,11 +17,11 @@ RUN npm -g install pnpm@^9.0.0
 # Create app directory
 WORKDIR /app
 COPY pnpm-lock.yaml .
-RUN --mount=type=cache,id=onetag_pnpm,target=/root/.local/share/pnpm/store/v3 pnpm fetch
+#RUN --mount=type=cache,id=onetag_pnpm,target=/root/.local/share/pnpm/store/v3 pnpm fetch
 
 COPY . .
-RUN rm .env*
-RUN --mount=type=cache,id=onetag_pnpm,target=/root/.local/share/pnpm/store/v3 pnpm install -r --unsafe-perm
+#RUN rm .env*
+#RUN --mount=type=cache,id=onetag_pnpm,target=/root/.local/share/pnpm/store/v3 pnpm install -r --unsafe-perm
 
 ENV NEXTJS_STANDALONE_BUILD=1
 #Tubo cache is not working well ?
