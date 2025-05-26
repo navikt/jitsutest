@@ -16,13 +16,24 @@ spec:
     limits:
       memory: "512Mi"
   liveness:
-    path: "/signin"
+    path: "/api/healthcheck"
     port: 3000
+    initialDelay: 60
   readiness:
-    path: "/signin"
+    path: "/api/healthcheck"
     port: 3000
+    initialDelay: 30
   replicas:
     cpuThresholdPercentage: 50
     max: 2
     min: 1
   port: 3000
+  env:
+    - name: MIT_COMPLIANT
+      value: "false"
+    - name: ENABLE_CREDENTIALS_LOGIN
+      value: "true"
+    - name: SYNCS_ENABLED
+      value: "false"
+    - name: FORCE_UPDATE_DB
+      value: "true"
