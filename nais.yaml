@@ -8,17 +8,17 @@ metadata:
 spec:
   image: {{ image }}
   gcp:
-  sqlInstances:
-    - type: POSTGRES_17
-      tier: db-f1-micro
-      flags:
-        - name: cloudsql.logical_decoding
-          value: "on"
-      databases:
-        - name: jitsutest
-          users:
-            - name: datastream
-      diskAutoresize: true
+    sqlInstances:
+      - type: POSTGRES_17
+        tier: db-f1-micro
+        flags:
+          - name: cloudsql.logical_decoding
+            value: "on"
+        databases:
+          - name: jitsutest
+            users:
+              - name: datastream
+        diskAutoresize: true
   ingresses:
     - "https://jitsutest.ansatt.nav.no"
   resources:
