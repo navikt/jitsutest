@@ -53,9 +53,6 @@ jobs:
       - name: Install dependencies with pnpm
         run: pnpm install --no-frozen-lockfile
 
-      - name: Build Beta Images for AMD64
-        run: pnpm build-scripts docker --platform linux/amd64 --tag beta --push-git-tag --push-docker --logs
-
     outputs:
       image: ${{ steps.docker-build-push.outputs.image }}
 
