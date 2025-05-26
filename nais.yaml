@@ -49,6 +49,10 @@ spec:
       value: "false"
     - name: FORCE_UPDATE_DB
       value: "true"
+    - name: SEED_USER_EMAIL
+      value: "eilif.johansen@nav.no"
+    - name: SEED_USER_PASSWORD
+      value: "test"
     - name: ROTOR_URL
       value: "http://rotor:3401"
     - name: ROTOR_AUTH_KEY
