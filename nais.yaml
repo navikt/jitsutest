@@ -37,3 +37,35 @@ spec:
       value: "false"
     - name: FORCE_UPDATE_DB
       value: "true"
+    - name: ROTOR_URL
+      value: "http://rotor:3401"
+    - name: ROTOR_AUTH_KEY
+      value: "default"
+    - name: BULKER_URL
+      value: "http://bulker:3042"
+    - name: CONSOLE_RAW_AUTH_TOKENS
+      value: "default"
+    - name: BULKER_AUTH_KEY
+      value: "default"
+    - name: DATABASE_URL
+      value: "postgresql://postgres:default@postgres:5432/postgres?schema=newjitsu"
+    - name: SYNCCTL_URL
+      value: "http://syncctl:3043"
+    - name: SYNCCTL_AUTH_KEY
+      value: "default"
+    - name: JITSU_INGEST_PUBLIC_URL
+      value: "http://localhost:8080/"
+    - name: JITSU_PUBLIC_URL
+      value: "https://jitsutest.ansatt.nav.no/"
+    - name: NEXTAUTH_URL
+      value: "https://jitsutest.ansatt.nav.no/"
+    - name: CLICKHOUSE_HOST
+      value: "clickhouse:8123"
+    - name: CLICKHOUSE_PASSWORD
+      value: "default"
+    - name: CLICKHOUSE_DATABASE
+      value: "newjitsu_metrics"
+    - name: MONGODB_URL
+      value: "mongodb://default:default@mongo/"
+    - name: MONGODB_NETWORK_COMPRESSION
+      value: "none"
