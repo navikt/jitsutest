@@ -7,6 +7,18 @@ metadata:
     team: team-researchops
 spec:
   image: {{ image }}
+  gcp:
+  sqlInstances:
+    - type: POSTGRES_17
+      tier: db-f1-micro
+      flags:
+        - name: cloudsql.logical_decoding
+          value: "on"
+      databases:
+        - name: jitsutime
+          users:
+            - name: datastream
+      diskAutoresize: true
   ingresses:
     - "https://jitsutest.ansatt.nav.no"
   resources:
@@ -48,7 +60,7 @@ spec:
     - name: BULKER_AUTH_KEY
       value: "default"
     - name: DATABASE_URL
-      value: "postgresql://postgres:default@postgres:5432/postgres?schema=newjitsu"
+      value: "postgresql://$(NAIS_DATABASE_JITSUTIME_JITSUTIME_USERNAME):$(NAIS_DATABASE_JITSUTIME_JITSUTIME_PASSWORD)@$(NAIS_DATABASE_JITSUTIME_JITSUTIME_HOST):$(NAIS_DATABASE_JITSUTIME_JITSUTIME_PORT)/$(NAIS_DATABASE_JITSUTIME_JITSUTIME_DATABASE)?schema=newjitsu"
     - name: SYNCCTL_URL
       value: "http://syncctl:3043"
     - name: SYNCCTL_AUTH_KEY
