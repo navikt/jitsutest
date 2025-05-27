@@ -24,5 +24,5 @@ ENV ROTOR_URL="http://rotor:3401" \
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD curl -f http://localhost:3000/api/healthcheck || exit 1
 
-# Run the run.sh script
-CMD ["/app/run.sh"]
+# Use ENTRYPOINT instead of CMD to ensure our script runs first
+ENTRYPOINT ["/app/run.sh"]
