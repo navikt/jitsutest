@@ -53,7 +53,7 @@ fi
 
 # Construct DATABASE_URL with standard PostgreSQL SSL parameters
 if [[ -n "$NAIS_DATABASE_JITSUTEST_JITSUTEST_USERNAME" && -n "$NAIS_DATABASE_JITSUTEST_JITSUTEST_PASSWORD" && -n "$NAIS_DATABASE_JITSUTEST_JITSUTEST_HOST" && -n "$NAIS_DATABASE_JITSUTEST_JITSUTEST_PORT" && -f "/tmp/client-cert.pem" ]]; then
-  export DATABASE_URL="postgresql://$NAIS_DATABASE_JITSUTEST_JITSUTEST_USERNAME:$NAIS_DATABASE_JITSUTEST_JITSUTEST_PASSWORD@$NAIS_DATABASE_JITSUTEST_JITSUTEST_HOST:$NAIS_DATABASE_JITSUTEST_JITSUTEST_PORT/jitsutest?sslmode=require&sslcert=/tmp/client-cert.pem&sslkey=/tmp/client-key.pem&sslrootcert=$NAIS_DATABASE_JITSUTEST_JITSUTEST_SSLROOTCERT" || echo "Failed to set DATABASE_URL" >> /tmp/run_error.log
+  export DATABASE_URL="postgresql://$NAIS_DATABASE_JITSUTEST_JITSUTEST_USERNAME:$NAIS_DATABASE_JITSUTEST_JITSUTEST_PASSWORD@$NAIS_DATABASE_JITSUTEST_JITSUTEST_HOST:$NAIS_DATABASE_JITSUTEST_JITSUTEST_PORT/jitsutest?schema=newjitsu" || echo "Failed to set DATABASE_URL" >> /tmp/run_error.log
   echo "DATABASE_URL set to: $DATABASE_URL"
 else
   echo "Error: Missing required SSL environment variables or client certificate not created"
