@@ -1,5 +1,14 @@
 FROM jitsucom/console:latest
 
+USER root
+RUN apk update && apk add --no-cache bash openssl ca-certificates postgresql-client libc6-compat
+
+WORKDIR /app
+
+# Copy the run.sh script and set permissions
+COPY run.sh /app/run.sh
+RUN chmod +x /app/run.sh
+
 EXPOSE 3000
 
 # Set default environment variables that would typically come from docker-compose
@@ -15,3 +24,6 @@ ENV ROTOR_URL="http://rotor:3401" \
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD curl -f http://localhost:3000/api/healthcheck || exit 1
+
+# Run the run.sh script
+CMD ["/app/run.sh"]
