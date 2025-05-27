@@ -1,7 +1,6 @@
 FROM jitsucom/console:latest
 
 USER root
-RUN apk update && apk add --no-cache bash openssl ca-certificates postgresql-client libc6-compat
 
 WORKDIR /app
 
