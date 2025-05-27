@@ -53,4 +53,4 @@ else
 fi
 
 # Start the application
-exec "$@"
+yarn start-docker
