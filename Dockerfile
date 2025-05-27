@@ -2,10 +2,6 @@ FROM jitsucom/console:latest
 
 EXPOSE 3000
 
-# Copy and make the run script executable
-COPY run.sh /app/run.sh
-RUN chmod +x /app/run.sh
-
 # Set default environment variables that would typically come from docker-compose
 ENV ROTOR_URL="http://rotor:3401" \
     BULKER_URL="http://bulker:3042" \
@@ -15,10 +11,6 @@ ENV ROTOR_URL="http://rotor:3401" \
     FORCE_UPDATE_DB="true" \
     CLICKHOUSE_DATABASE="newjitsu_metrics" \
     MONGODB_NETWORK_COMPRESSION="none"
-
-# Use the run script as entrypoint and pass npm start as arguments
-ENTRYPOINT ["/app/run.sh"]
-CMD ["npm", "start"]
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \

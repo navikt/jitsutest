@@ -63,6 +63,8 @@ spec:
       value: "default"
     - name: BULKER_AUTH_KEY
       value: "default"
+    - name: DATABASE_URL
+      value: "postgresql://$(NAIS_DATABASE_JITSUTEST_JITSUTEST_USERNAME):$(NAIS_DATABASE_JITSUTEST_JITSUTEST_PASSWORD)@$(NAIS_DATABASE_JITSUTEST_JITSUTEST_HOST):$(NAIS_DATABASE_JITSUTEST_JITSUTEST_PORT)/$(NAIS_DATABASE_JITSUTEST_JITSUTEST_DATABASE)?schema=newjitsu"
     - name: SYNCCTL_URL
       value: "http://syncctl:3043"
     - name: SYNCCTL_AUTH_KEY
