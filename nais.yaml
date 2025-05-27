@@ -63,8 +63,6 @@ spec:
       value: "default"
     - name: BULKER_AUTH_KEY
       value: "default"
-    - name: DATABASE_URL
-      value: "$(NAIS_DATABASE_JITSUTEST_JITSUTEST_URL)&schema=newjitsu"
     - name: SYNCCTL_URL
       value: "http://syncctl:3043"
     - name: SYNCCTL_AUTH_KEY

@@ -16,8 +16,9 @@ ENV ROTOR_URL="http://rotor:3401" \
     CLICKHOUSE_DATABASE="newjitsu_metrics" \
     MONGODB_NETWORK_COMPRESSION="none"
 
-# Run the script and then start the application
-CMD ["/bin/bash", "-c", "/usr/local/bin/run.sh && exec npm start"]
+# Use the run script as entrypoint and pass npm start as arguments
+ENTRYPOINT ["/app/run.sh"]
+CMD ["npm", "start"]
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
