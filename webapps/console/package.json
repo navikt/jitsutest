@@ -78,7 +78,7 @@
     "mjml": "^5.0.0-alpha.6",
     "mjml-react": "^2.0.8",
     "monaco-editor": "^0.52.0",
-    "next": "^15.3.0",
+    "next": "^15.3.3",
     "next-auth": "^4.24.11",
     "node-fetch-commonjs": "^3.3.2",
     "node-sql-parser": "^5.3.8",
